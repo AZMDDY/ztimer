@@ -13,8 +13,8 @@ namespace ztimer {
         Timer();
         virtual ~Timer();
         virtual void TimeOut() = 0;
-        inline void Start(TimerMode mode, unsigned int duration);
-        inline void Stop();
+        void Start(TimerMode mode, unsigned int duration);
+        void Stop();
 
     private:
         unsigned long timerId;  // 定时器id
