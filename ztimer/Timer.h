@@ -13,6 +13,7 @@ namespace ztimer {
         Timer();
         virtual ~Timer();
         virtual void TimeOut() = 0;
+        // duration: ms
         void Start(TimerMode mode, unsigned int duration);
         void Stop();
 
