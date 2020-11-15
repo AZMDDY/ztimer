@@ -16,12 +16,6 @@ namespace ztimer {
         void UnRegisterTimer(unsigned long timerId);
 
     private:
-        // 定时器属性
-        struct TimerAttr {
-            unsigned long timerId;
-            unsigned int turn;  // 轮数
-            bool operator<(TimerAttr otherTimerAttr) const;
-        };
         TimerManager();
         inline bool TimerValid(unsigned long timerId);
         inline bool TimerExist(unsigned long timerId);

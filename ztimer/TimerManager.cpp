@@ -72,8 +72,6 @@ namespace ztimer {
         return instance;
     }
 
-    bool TimerManager::TimerAttr::operator<(TimerAttr otherTimerAttr) const { return this->turn < otherTimerAttr.turn; }
-
     bool TimerManager::TimerValid(unsigned long timerId) { return timerId != 0; }
 
     bool TimerManager::TimerExist(unsigned long timerId) { return timerMap.find(timerId) != timerMap.end(); }
