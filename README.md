@@ -38,3 +38,29 @@ int main(int argc, char** argv)
 在本项目中影响定时器的主要因素是产生滴答信号的精度。
 
 ![](https://raw.githubusercontent.com/AZMDDY/imgs/master/20201115121300.png)
+
+## 编译
+
+```bash
+mkdir build && cd build
+cmake ..
+make
+make install
+```
+
+## 示例
+
+```bash
+# 项目的根目录ROOT_DIR
+cd ${ROOT_DIR}
+mkdir build && cd build
+cmake -DCMAKE_INSTALL_PREFIX=${ROOT_DIR}/examples ..
+make
+make install
+
+cd examples
+mkdir build && cd build
+cmake ..
+make
+./example_ztimer
+```
