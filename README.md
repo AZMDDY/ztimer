@@ -24,7 +24,7 @@ private:
 int main(int argc, char** argv)
 {
     ATimer a;
-    a.Start(ztimer::LOOP, 1000);
+    a.Start(ztimer::LOOP, 1_s);
     std::thread t([]() {
         while (1) {
             std::this_thread::sleep_for(std::chrono::seconds(2));

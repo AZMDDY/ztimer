@@ -8,6 +8,8 @@ add_compile_options(-Wconversion)
 add_compile_options(-Wuninitialized)
 add_compile_options(-Werror)
 
+set(CMAKE_CXX_STANDARD 14)
+
 SET(CMAKE_BUILD_TYPE "Release")
 
 include_directories(./ztimer)
