@@ -1,5 +1,7 @@
 .vscode
 .idea
-
+examples/build
+examples/include
+examples/lib
 build
 cmake*

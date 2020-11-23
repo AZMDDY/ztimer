@@ -1,11 +1,13 @@
 #ifndef ZTIMER_TIMER_H_
 #define ZTIMER_TIMER_H_
 
+#include <string>
+
 namespace ztimer {
 
     enum TimerMode {
-        ONCE,  // do once
-        LOOP   // do loop
+        ONCE = 0,  // do once
+        LOOP = 1   // do loop
     };
 
     // 可能存在精度丢失！
@@ -19,8 +21,11 @@ namespace ztimer {
         Timer();
         virtual ~Timer();
         virtual void TimeOut() = 0;
-        // duration: ms
-        void Start(TimerMode mode, unsigned int duration);
+
+        // 注意：如果两个Start()都调用了，只有第一个调用的会生效!!!
+        void Start(TimerMode mode, unsigned int duration);  // 调用此函数，表明是相对定时器，duration: ms
+        void Start(const std::string& futureTime);          // 调用此函数，表明是绝对定时器
+
         void Stop();
 
     private:

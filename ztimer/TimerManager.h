@@ -2,6 +2,7 @@
 #define ZTIMER_TIMER_MANAGER_H_
 #include <array>
 #include <vector>
+#include <string>
 #include <mutex>
 #include <unordered_map>
 #include "Timer.h"
@@ -13,12 +14,17 @@ namespace ztimer {
         static TimerManager& Instance();
         ~TimerManager();
         void RegisterRelTimer(unsigned long timerId, TimerMode mode, unsigned int duration);
+        void RegisterAbsTimer(unsigned long timerId, const std::string& timePoint);
         void UnRegisterTimer(unsigned long timerId);
 
     private:
         TimerManager();
         inline bool TimerValid(unsigned long timerId);
         inline bool TimerExist(unsigned long timerId);
+        std::vector<int> TimePointValid(const std::string& timePoint);
+        bool TimePointValid(const std::chrono::system_clock::time_point& timePoint);
+        std::chrono::system_clock::time_point Str2Time(const std::string& timePoint);
+        inline std::chrono::system_clock::time_point Now();
 
     private:
         unsigned int pin;                    // 刻度针
@@ -27,7 +33,7 @@ namespace ztimer {
         std::vector<std::unordered_map<unsigned long, std::array<unsigned int, 3>>> timeWheel;  // 时间轮
         // 定时ID : 定时器挂载点
         std::unordered_map<unsigned long, unsigned int> timerMap;
-
+        std::unordered_map<unsigned long, std::chrono::system_clock::time_point> AbsTimerMap;
         std::mutex mtx;
     };
 }  // namespace ztimer

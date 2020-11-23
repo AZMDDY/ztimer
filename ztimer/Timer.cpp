@@ -15,6 +15,14 @@ namespace ztimer {
         TimerManager::Instance().RegisterRelTimer(this->timerId, mode, duration);
     }
 
+    void Timer::Start(const std::string& futureTime)
+    {
+        this->mode = ONCE;
+        this->duration = 0;
+        this->timerId = reinterpret_cast<unsigned long>(this);
+        TimerManager::Instance().RegisterAbsTimer(this->timerId, futureTime);
+    }
+
     void Timer::Stop()
     {
         TimerManager::Instance().UnRegisterTimer(timerId);

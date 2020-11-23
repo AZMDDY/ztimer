@@ -1,22 +1,40 @@
 # C++定时器
 
-> 采用时间轮法设计的相对定时器;
+> 采用时间轮法设计的定时器;
 
 首先Tick线程产生时钟滴答信号，定时转动时间轮，时间轮的刻度针指向某刻度时，挂载在上面的定时器计数减一，当计数为0时，异步执行超时函数。
 
-在本项目中，使用数组作为时间轮构造的数据结构，映射作为定时器存储的数据结构，以定时器对象的指针作为关键索引。使用构造一个定时器很简单，只需要继承`Timer`类即可。通过`Start`函数可以构造`循环定时器(LOOP)`和`一次性定时器(ONCE)`。
+在本项目中，使用数组作为时间轮构造的数据结构，映射作为定时器存储的数据结构，以定时器对象的指针作为关键索引。使用构造一个定时器很简单，只需要继承`Timer`类即可。通过`Start`函数可以构造`循环定时器(LOOP)`、`一次性定时器(ONCE)`以及`绝对定时器`。
 
 ```cpp
 #include <iostream>
 #include <thread>
 #include <chrono>
 #include "ztimer/Timer.h"
-
+using namespace ztimer;
 class ATimer : public ztimer::Timer {
 public:
     ATimer() {}
     ~ATimer() {}
-    void TimeOut() { std::cerr << "timeout" << std::endl; }
+    void TimeOut() { std::cerr << "a timeout" << std::endl; }
+
+private:
+};
+
+class BTimer : public ztimer::Timer {
+public:
+    BTimer() {}
+    ~BTimer() {}
+    void TimeOut() { std::cerr << "b timeout" << std::endl; }
+
+private:
+};
+
+class CTimer : public ztimer::Timer {
+public:
+    CTimer() {}
+    ~CTimer() {}
+    void TimeOut() { std::cerr << "c timeout" << std::endl; }
 
 private:
 };
@@ -24,7 +42,11 @@ private:
 int main(int argc, char** argv)
 {
     ATimer a;
-    a.Start(ztimer::LOOP, 1_s);
+    a.Start(ztimer::ONCE, 0.8_s);
+    BTimer b;
+    b.Start(ztimer::ONCE, 2.5_s);
+    CTimer c;
+    c.Start("2020-11-23 22:35:00"); // 绝对定时器，基于过去时间无法成功注册定时器
     std::thread t([]() {
         while (1) {
             std::this_thread::sleep_for(std::chrono::seconds(2));
