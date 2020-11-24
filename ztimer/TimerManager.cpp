@@ -7,12 +7,10 @@
 
 namespace ztimer {
     namespace {
-        using namespace std::chrono_literals;
         static std::condition_variable cv;
         static std::mutex tickMtx;  // 用于同步滴答
         static bool tick = false;
         const unsigned int tickPrecision = 1;  // ms
-        const unsigned int AbsMode = 2;        // 定时器模式: 绝对定时器
         enum Mode {
             REL_ONCE = ONCE,  // 相对定时器 一次性模式
             REL_LOOP = LOOP,  // 相对定时器 循环模式
@@ -45,45 +43,50 @@ namespace ztimer {
                 std::lock_guard<std::mutex> lk(mtx);
                 pin++;
                 pin = (pin == timeWheelPeriod ? 0 : pin);
-                for (auto iter = timeWheel[pin].begin(); iter != timeWheel[pin].end();) {
-                    if (iter->second[2]-- == 0) {
-                        Timer* timer = reinterpret_cast<Timer*>(iter->first);
-                        switch (static_cast<Mode>(iter->second[0])) {
-                            case REL_LOOP: {
-                                std::async(std::launch::async, &Timer::TimeOut, timer);  // 异步执行超时函数
-                                iter->second[2] = iter->second[1];
-                                iter++;
-                            } break;
-                            case REL_ONCE: {
-                                std::async(std::launch::async, &Timer::TimeOut, timer);  // 异步执行超时函数
-                                // 移除一次性相对定时器
-                                timerMap.erase(iter->first);
-                                iter = timeWheel[pin].erase(iter);
-                            } break;
-                            case ABS_ONCE: {
-                                // TODO 防止篡改系统时间攻击
-                                if (AbsTimerMap[iter->first] <= Now()) {
-                                    std::async(std::launch::async, &Timer::TimeOut, timer);  // 异步执行超时函数
-                                    // 移除绝对定时器
-                                    timerMap.erase(iter->first);
-                                    AbsTimerMap.erase(iter->first);
-                                    iter = timeWheel[pin].erase(iter);
-                                }
-                                else {
-                                    iter->second[2] = iter->second[1];
-                                    iter++;
-                                }
-                            }
-                            default: break;
-                        }
-                    }
-                    else {
-                        iter++;
-                    }
-                }
+                Turn(pin);
             }
         });
         turnThread.detach();
+    }
+
+    void TimerManager::Turn(unsigned int pos)
+    {
+        for (auto iter = timeWheel[pos].begin(); iter != timeWheel[pos].end();) {
+            if (iter->second[2]-- == 0) {
+                Timer* timer = reinterpret_cast<Timer*>(iter->first);
+                switch (static_cast<Mode>(iter->second[0])) {
+                    case REL_LOOP: {
+                        std::async(std::launch::async, &Timer::TimeOut, timer);  // 异步执行超时函数
+                        iter->second[2] = iter->second[1];
+                        iter++;
+                    } break;
+                    case REL_ONCE: {
+                        std::async(std::launch::async, &Timer::TimeOut, timer);  // 异步执行超时函数
+                        // 移除一次性相对定时器
+                        timerMap.erase(iter->first);
+                        iter = timeWheel[pos].erase(iter);
+                    } break;
+                    case ABS_ONCE: {
+                        // TODO 防止篡改系统时间攻击
+                        if (AbsTimerMap[iter->first] <= Now()) {
+                            std::async(std::launch::async, &Timer::TimeOut, timer);  // 异步执行超时函数
+                            // 移除绝对定时器
+                            timerMap.erase(iter->first);
+                            AbsTimerMap.erase(iter->first);
+                            iter = timeWheel[pos].erase(iter);
+                        }
+                        else {
+                            iter->second[2] = iter->second[1];
+                            iter++;
+                        }
+                    }
+                    default: break;
+                }
+            }
+            else {
+                iter++;
+            }
+        }
     }
 
     TimerManager::~TimerManager() {}
@@ -174,7 +177,7 @@ namespace ztimer {
         }
         timerMap[timerId] = 0;
         AbsTimerMap[timerId] = futureTime;
-        timeWheel[0][timerId] = {AbsMode, 0, 0};
+        timeWheel[0][timerId] = {ABS_ONCE, 0, 0};
     }
 
     void TimerManager::UnRegisterTimer(unsigned long timerId)

@@ -19,6 +19,7 @@ namespace ztimer {
 
     private:
         TimerManager();
+        void Turn(unsigned int pos);
         inline bool TimerValid(unsigned long timerId);
         inline bool TimerExist(unsigned long timerId);
         std::vector<int> TimePointValid(const std::string& timePoint);
