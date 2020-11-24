@@ -31,8 +31,9 @@ namespace ztimer {
         const unsigned int timeWheelPeriod;  // 时间轮周期(刻度数)
         // 定时器ID: [定时器模式, 轮数, 轮数计数]]
         std::vector<std::unordered_map<unsigned long, std::array<unsigned int, 3>>> timeWheel;  // 时间轮
-        // 定时ID : 定时器挂载点
+        // 定时器ID : 定时器挂载点
         std::unordered_map<unsigned long, unsigned int> timerMap;
+        // 定时器ID : 时间点
         std::unordered_map<unsigned long, std::chrono::system_clock::time_point> AbsTimerMap;
         std::mutex mtx;
     };

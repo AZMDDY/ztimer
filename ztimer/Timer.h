@@ -35,6 +35,7 @@ namespace ztimer {
 
         // 注意：如果两个Start()都调用了，只有第一个调用的会生效!!!
         void Start(TimerMode mode, unsigned int duration);  // 调用此函数，表明是相对定时器，duration: ms
+        // futureTime的格式："xxxx-xx-xx xx:xx:xx"
         void Start(const std::string& futureTime);          // 调用此函数，表明是绝对定时器
 
         void Stop();
