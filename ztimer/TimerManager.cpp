@@ -5,30 +5,66 @@
 #include <condition_variable>
 #include "TimerManager.h"
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
+    #define OS_WINDOWS
+#elif defined(__CYGWIN__) || defined(__CYGWIN32__)
+    #define OS_CYGWIN
+#elif defined(linux) || defined(__linux) || defined(__linux__)
+    #ifndef OS_LINUX
+        #define OS_LINUX
+    #endif
+#elif defined(macintosh) || defined(__APPLE__) || defined(__APPLE_CC__)
+    #define OS_MACOSX
+#elif defined(__FreeBSD__)
+    #define OS_FREEBSD
+#elif defined(__NetBSD__)
+    #define OS_NETBSD
+#elif defined(__OpenBSD__)
+    #define OS_OPENBSD
+#else
+// TODO Add other platforms.
+#endif
+
+#ifdef OS_LINUX
+    #include <sys/time.h>
+#endif
+
 namespace ztimer {
-    namespace {
-        static std::condition_variable cv;
-        static std::mutex tickMtx;  // 用于同步滴答
-        static bool tick = false;
-        const unsigned int tickPrecision = 1;  // ms
-        enum Mode {
-            REL_ONCE = ONCE,  // 相对定时器 一次性模式
-            REL_LOOP = LOOP,  // 相对定时器 循环模式
-            ABS_ONCE = 2      // 绝对定时器 一次性模式
-        };
-        static void StartTick()
-        {
-            static std::thread tickThread([]() {
-                while (true) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(tickPrecision));
-                    std::lock_guard<std::mutex> lk(tickMtx);
-                    tick = true;
-                    cv.notify_one();
-                }
-            });
-            tickThread.detach();
-        }
-    }  // namespace
+
+    static std::condition_variable cv;
+    static std::mutex tickMtx;  // 用于同步滴答
+    static bool tick = false;
+    const unsigned int tickPrecision = 1;  // ms
+    enum Mode {
+        REL_ONCE = ONCE,  // 相对定时器 一次性模式
+        REL_LOOP = LOOP,  // 相对定时器 循环模式
+        ABS_ONCE = 2      // 绝对定时器 一次性模式
+    };
+
+    inline void SleepMs(unsigned int t)  // 毫秒级延时
+    {
+#ifdef OS_LINUX
+        timespec ts;
+        ts.tv_sec = t / 1000;
+        ts.tv_nsec = (1000000L * (t % 1000));
+        while (nanosleep(&ts, &ts) < 0 && errno == EINTR) {}
+#else
+        std::this_thread::sleep_for(std::chrono::milliseconds(t));
+#endif
+    }
+
+    static void StartTick()
+    {
+        static std::thread tickThread([]() {
+            while (true) {
+                SleepMs(tickPrecision);
+                std::lock_guard<std::mutex> lk(tickMtx);
+                tick = true;
+                cv.notify_one();
+            }
+        });
+        tickThread.detach();
+    }
 
     TimerManager::TimerManager() : pin(0), timeWheelPeriod(1000), timeWheel(timeWheelPeriod)
     {
@@ -153,8 +189,8 @@ namespace ztimer {
         }
         // 计算定时器挂载位置
         unsigned int period = timeWheelPeriod * tickPrecision;
-        unsigned int pos = duration % period + pin;
-        pos = pos >= period ? pos - period : pos;
+        unsigned int pos = (duration / tickPrecision) % timeWheelPeriod + pin;
+        pos = pos >= timeWheelPeriod ? pos - timeWheelPeriod : pos;
 
         unsigned int turn = duration / period;
         timerMap[timerId] = pos;
