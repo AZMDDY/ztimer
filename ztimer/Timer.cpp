@@ -7,34 +7,26 @@ namespace ztimer {
 
     Timer::~Timer() { Stop(); }
 
-    void Timer::Start(TimerMode mode, unsigned int duration)
+    int Timer::Start(TimerMode mode, unsigned int duration)
     {
         this->mode = mode;
         this->duration = duration;
         this->timerId = reinterpret_cast<unsigned long>(this);
-        int ret = TimerManager::Instance().RegisterRelTimer(this->timerId, mode, duration);
-        if (!ret) {
-            printf("start timer failed. error code: %d", ret);
-        }
+        return TimerManager::Instance().RegisterRelTimer(this->timerId, mode, duration);
     }
 
-    void Timer::Start(const std::string& futureTime)
+    int Timer::Start(const std::string& futureTime)
     {
         this->mode = ONCE;
         this->duration = 0;
         this->timerId = reinterpret_cast<unsigned long>(this);
-        int ret = TimerManager::Instance().RegisterAbsTimer(this->timerId, futureTime);
-        if (!ret) {
-            printf("start timer failed. error code: %d", ret);
-        }
+        return TimerManager::Instance().RegisterAbsTimer(this->timerId, futureTime);
     }
 
-    void Timer::Stop()
+    int Timer::Stop()
     {
         int ret = TimerManager::Instance().UnRegisterTimer(timerId);
-        if (!ret) {
-            printf("stop timer failed. error code: %d", ret);
-        }
         timerId = 0;
+        return ret;
     }
 }  // namespace ztimer
