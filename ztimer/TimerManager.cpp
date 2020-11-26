@@ -4,6 +4,7 @@
 #include <ctime>
 #include <condition_variable>
 #include "TimerManager.h"
+#include "ErrorCode.h"
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
     #define OS_WINDOWS
@@ -181,11 +182,11 @@ namespace ztimer {
 
     std::chrono::system_clock::time_point TimerManager::Now() { return std::chrono::system_clock::now(); }
 
-    void TimerManager::RegisterRelTimer(unsigned long timerId, TimerMode mode, unsigned int duration)
+    int TimerManager::RegisterRelTimer(unsigned long timerId, TimerMode mode, unsigned int duration)
     {
         std::lock_guard<std::mutex> lk(mtx);
         if (!TimerValid(timerId) || TimerExist(timerId)) {
-            return;
+            return ERR_TIMER_ID_INVALID_EXIST;
         }
         // 计算定时器挂载位置
         unsigned int period = timeWheelPeriod * tickPrecision;
@@ -195,32 +196,34 @@ namespace ztimer {
         unsigned int turn = duration / period;
         timerMap[timerId] = pos;
         timeWheel[pos][timerId] = {static_cast<unsigned int>(mode), turn, turn};
+        return ERR_OK;
     }
 
-    void TimerManager::RegisterAbsTimer(unsigned long timerId, const std::string& timePoint)
+    int TimerManager::RegisterAbsTimer(unsigned long timerId, const std::string& timePoint)
     {
         auto futureTime = Str2Time(timePoint);
         if (futureTime < Now()) {
-            return;
+            return ERR_TIME_POINT_LATE;
         }
 
         if (!TimePointValid(futureTime)) {
-            return;
+            return ERR_TIME_POINT_FMT;
         }
         std::lock_guard<std::mutex> lk(mtx);
         if (!TimerValid(timerId) || TimerExist(timerId)) {
-            return;
+            return ERR_TIMER_ID_INVALID_EXIST;
         }
         timerMap[timerId] = 0;
         AbsTimerMap[timerId] = futureTime;
         timeWheel[0][timerId] = {ABS_ONCE, 0, 0};
+        return ERR_OK;
     }
 
-    void TimerManager::UnRegisterTimer(unsigned long timerId)
+    int TimerManager::UnRegisterTimer(unsigned long timerId)
     {
         std::lock_guard<std::mutex> lk(mtx);
         if (!TimerValid(timerId) || !TimerExist(timerId)) {
-            return;
+            return ERR_TIMER_ID_INVALID_NOT_EXIST;
         }
         unsigned int pos = timerMap[timerId];
         timerMap.erase(timerId);
@@ -228,6 +231,7 @@ namespace ztimer {
             AbsTimerMap.erase(timerId);
         }
         timeWheel[pos].erase(timerId);
+        return ERR_OK;
     }
 
 }  // namespace ztimer

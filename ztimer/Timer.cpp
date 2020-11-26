@@ -12,7 +12,10 @@ namespace ztimer {
         this->mode = mode;
         this->duration = duration;
         this->timerId = reinterpret_cast<unsigned long>(this);
-        TimerManager::Instance().RegisterRelTimer(this->timerId, mode, duration);
+        int ret = TimerManager::Instance().RegisterRelTimer(this->timerId, mode, duration);
+        if (!ret) {
+            printf("start timer failed. error code: %d", ret);
+        }
     }
 
     void Timer::Start(const std::string& futureTime)
@@ -20,12 +23,18 @@ namespace ztimer {
         this->mode = ONCE;
         this->duration = 0;
         this->timerId = reinterpret_cast<unsigned long>(this);
-        TimerManager::Instance().RegisterAbsTimer(this->timerId, futureTime);
+        int ret = TimerManager::Instance().RegisterAbsTimer(this->timerId, futureTime);
+        if (!ret) {
+            printf("start timer failed. error code: %d", ret);
+        }
     }
 
     void Timer::Stop()
     {
-        TimerManager::Instance().UnRegisterTimer(timerId);
+        int ret = TimerManager::Instance().UnRegisterTimer(timerId);
+        if (!ret) {
+            printf("stop timer failed. error code: %d", ret);
+        }
         timerId = 0;
     }
 }  // namespace ztimer

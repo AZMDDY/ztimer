@@ -13,9 +13,9 @@ namespace ztimer {
     public:
         static TimerManager& Instance();
         ~TimerManager();
-        void RegisterRelTimer(unsigned long timerId, TimerMode mode, unsigned int duration);
-        void RegisterAbsTimer(unsigned long timerId, const std::string& timePoint);
-        void UnRegisterTimer(unsigned long timerId);
+        int RegisterRelTimer(unsigned long timerId, TimerMode mode, unsigned int duration);
+        int RegisterAbsTimer(unsigned long timerId, const std::string& timePoint);
+        int UnRegisterTimer(unsigned long timerId);
 
     private:
         TimerManager();
