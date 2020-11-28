@@ -104,7 +104,6 @@ namespace ztimer {
                         iter = timeWheel[pos].erase(iter);
                     } break;
                     case ABS_ONCE: {
-                        // TODO 防止篡改系统时间攻击
                         if (AbsTimerMap[iter->first] <= Now()) {
                             std::async(std::launch::async, &Timer::TimeOut, timer);  // 异步执行超时函数
                             // 移除绝对定时器
