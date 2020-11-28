@@ -65,7 +65,7 @@ int main(int argc, char** argv)
 
 ```bash
 mkdir build && cd build
-cmake ..
+cmake -DCMAKE_INSTALL_PREFIX=${your_dir} ..
 make
 make install
 ```
@@ -76,13 +76,7 @@ make install
 # 项目的根目录ROOT_DIR
 cd ${ROOT_DIR}
 mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=${ROOT_DIR}/examples ..
-make
-make install
-
-cd examples
-mkdir build && cd build
-cmake ..
+cmake -DTARGET=examples ..
 make
 ./example_ztimer
 ```

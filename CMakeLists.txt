@@ -14,6 +14,12 @@ SET(CMAKE_BUILD_TYPE "Release")
 
 include_directories(./ztimer)
 
+option(TARGET "taget" none)
+
+if(${TARGET} STREQUAL "examples")
+    add_executable(example_ztimer examples/main.cpp ztimer/TimerManager.cpp ztimer/Timer.cpp)
+    target_link_libraries(example_ztimer pthread)
+else()
 add_library(ztimer SHARED ztimer/TimerManager.cpp ztimer/Timer.cpp)
 
 target_link_libraries(ztimer pthread)
@@ -21,7 +27,8 @@ target_link_libraries(ztimer pthread)
 install(TARGETS ztimer
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}./
 )
 
 install(FILES ztimer/Timer.h DESTINATION include/ztimer/)
+endif()
