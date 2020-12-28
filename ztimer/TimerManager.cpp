@@ -35,7 +35,7 @@ namespace ztimer {
     static std::condition_variable cv;
     static std::mutex tickMtx;  // 用于同步滴答
     static bool tick = false;
-    const unsigned int tickPrecision = 1;  // ms
+    static const unsigned int tickPrecision = 1;  // ms
     enum Mode {
         REL_ONCE = ONCE,  // 相对定时器 一次性模式
         REL_LOOP = LOOP,  // 相对定时器 循环模式
